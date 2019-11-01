@@ -4,6 +4,9 @@ const jimp = require('jimp')
 const commandLineArgs = require('command-line-args')
 const commandLineUsage = require('command-line-usage')
 
+const MAX_WIDTH = 1920, MAX_HEIGHT = 1080
+let targets = [];
+
 const optionDefinitions = [
   { name: 'help', alias: 'h', type: Boolean, description: 'You\'re looking at it' },
   { name: 'concurrency', alias: 'c', type: Number, description: 'Maximum simultaneous ping requests' },
@@ -14,18 +17,11 @@ const optionDefinitions = [
 ]
 
 const { concurrency = 1000, timeout = 10, top = 0, left = 0, image, help} = commandLineArgs(optionDefinitions)
-let targets = [];
 
 if (help || !image) {
   console.log(commandLineUsage([
-    {
-      header: 'Usage',
-      optionList: optionDefinitions
-    },
-    {
-      header: 'Example',
-      content: 'Example: node index -c 1000 -t 100 -y 750 -x 1550 logo-elnino.png'
-    }
+    { header: 'Usage', optionList: optionDefinitions },
+    { header: 'Example', content: 'Example: node index -c 1000 -t 100 -y 750 -x 1550 logo-elnino.png' }
   ]))
   process.exit(0)
 }
@@ -45,7 +41,10 @@ const queue = async.queue(
 queue.drain(() => queue.push(targets))
 
 jimp.read(image).then(img => {
-  for(let y = 0; y < img.bitmap.height; y++) {
+  if (img.bitmap.height + top > MAX_HEIGHT || img.bitmap.width + left >= MAX_WIDTH) {
+    throw new Error(`Image does not fit in window (${MAX_WIDTH}x${MAX_HEIGHT})`)
+  }
+  for (let y = 0; y < img.bitmap.height; y++) {
     for(let x = 0; x < img.bitmap.width; x++) {
       const _x = (x + left).toString(16).padStart(4, '0')
       const _y = (y + top).toString(16).padStart(4, '0')
@@ -56,7 +55,7 @@ jimp.read(image).then(img => {
     }
   }
   queue.push(targets)
-}).catch(() => {
-  console.error('image does not exist')
+}).catch(e => {
+  console.error(e.message)
   process.exit(-1)
 })
