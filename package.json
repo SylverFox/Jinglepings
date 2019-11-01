@@ -1,0 +1,16 @@
+{
+  "name": "jinglepings",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "async": "^3.1.0",
+    "command-line-args": "^5.1.1",
+    "command-line-usage": "^6.0.2",
+    "jimp": "^0.8.5",
+    "net-ping": "^1.2.3"
+  },
+  "repository": "https://github.com/SylverFox/Jinglepings.git",
+  "author": "SylverFox <jorisdiesvelt@gmail.com>",
+  "private": true
+}
